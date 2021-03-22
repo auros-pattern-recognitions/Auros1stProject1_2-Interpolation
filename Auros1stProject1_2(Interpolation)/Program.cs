@@ -457,28 +457,40 @@ namespace BasicInterpolation
             string[] SingleLineData;            // 한 줄의 스펙트럼 데이터를 임시로 저장할 배열.
 
             // "SiO2 2nm_on_Si.dat" 파일 읽기. (한 줄씩)
-            MeasurementSpectrumData = File.ReadAllLines("SiO2_nm.txt");
+            MeasurementSpectrumData = File.ReadAllLines("Si_nm.txt");
+            int LoopNum = MeasurementSpectrumData.Length;
 
             // wavelength : 350 ~ 1000(nm)인 측정 스펙트럼 데이터를 담을 리스트 선언.
-            List<double> wavelength = new List<double>();   // 파장 데이터 리스트.
-            List<double> n = new List<double>();    // n 데이터 리스트.
-            List<double> k = new List<double>();   // k 데이터 리스트.
+            //List<double> wavelength = new List<double>();   // 파장 데이터 리스트.
+            //List<double> n = new List<double>();    // n 데이터 리스트.
+            //List<double> k = new List<double>();   // k 데이터 리스트.
+            double[] wavelength = new double[LoopNum-1];
+            double[] n = new double[LoopNum-1];
+            double[] k = new double[LoopNum-1];
 
             // 데이터의 첫번째 줄은 column 명이다.
             // 이를 제외하기 위해 반복문을 1부터 시작한다.
             int StartIndex = 1;
-            int LoopNum = MeasurementSpectrumData.Length;
+            
             for (int i = StartIndex; i < LoopNum; i++)
             {
                 // tsv 형식의 데이터를 SingleLineData에 저장한다.
                 SingleLineData = MeasurementSpectrumData[i].Split((char)0x09);  // 0x09 : 수평 탭.
 
                 // 각 컬럼에 해당하는 데이터를 저장한다.
-                wavelength.Add(Double.Parse(SingleLineData[0]));
-                n.Add(Double.Parse(SingleLineData[1]));
-                k.Add(Double.Parse(SingleLineData[2]));
+                //wavelength.Add(Double.Parse(SingleLineData[0]));
+                //n.Add(Double.Parse(SingleLineData[1]));
+                //k.Add(Double.Parse(SingleLineData[2]));
+                wavelength[i-1] = double.Parse(SingleLineData[0]);
+                n[i-1] = double.Parse(SingleLineData[1]);
+                k[i-1] = double.Parse(SingleLineData[2]);
             }
-            double[] ex = new double[wavelength.Count];
+
+            for (int i = 0; i < LoopNum-1; i++)
+            {
+                Console.WriteLine($"{wavelength[i]}          {n[i]}          {k[i]}");
+            }
+            /*double[] ex = new double[wavelength.Count];
             double[] en = new double[wavelength.Count];
             //double[] p = new double[wavelength.Count];
             double[] p = { 350, 355, 360, 400, 450, 500, 600, 650, 700, 750, 800, 850 };
@@ -509,7 +521,7 @@ namespace BasicInterpolation
                 Console.WriteLine($"{pp} \t:\t"
                     + CS.Interpolate(pp).ToString());
             }
-            Console.ReadLine();
+            Console.ReadLine();*/
         }
     }
 }
