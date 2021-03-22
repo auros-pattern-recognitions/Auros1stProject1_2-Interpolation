@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 //
 // 과제 1-2.
@@ -14,9 +13,10 @@ using System.Threading.Tasks;
 //
 //2021.03.22 조계성
 
-//3중 대각 행렬
-namespace TridiagonalMatrix
+
+namespace Interpolation
 {
+    //3중 대각 행렬
     #region TRIDIAGONAL_MATRIX
 
     // Thomas algorithmn을 이용한 3중 대각 행렬 계산
@@ -91,10 +91,7 @@ namespace TridiagonalMatrix
     }
 
     #endregion
-}
 
-namespace BasicInterpolation
-{
     #region EXTENSIONS
     public static class Extensions
     {
@@ -188,6 +185,7 @@ namespace BasicInterpolation
     }
 
     #endregion
+
     #region FOUNDATION
     //internal interface IInterpolate
     //{
@@ -252,80 +250,7 @@ namespace BasicInterpolation
     }
 
     #endregion
-
-    #region LINEAR
-    internal sealed class LinearInterpolation : Interpolation
-    {
-
-        public LinearInterpolation(double[] _x, double[] _y) : base(_x, _y)
-        {
-            len = X.Length;
-            if (len > 1)
-            {
-                Console.WriteLine("Successfully set abscissa and ordinate.");
-                baseset = true;
-                // make a copy of X as a list for later use
-                lX = X.ToList();
-            }
-            else
-                Console.WriteLine("Ensure x and y are the same length and have at least 2 elements. All x values must be unique.");
-        }
-
-        public override double? Interpolate(double p)
-        {
-            if (baseset)
-            {
-                double? result = null;
-                double Rx;
-
-                try
-                {
-                    // point p may be outside abscissa's range
-                    // if it is, we return null
-                    Rx = X.First(s => s >= p);
-                }
-                catch (ArgumentNullException)
-                {
-                    return null;
-                }
-
-                // at this stage we know that Rx contains a valid value
-                // find the index of the value close to the point required to be interpolated for
-                int i = lX.IndexOf(Rx);
-
-                // provide for index not found and lower and upper tabulated bounds
-                if (i == -1)
-                    return null;
-
-                if (i == len - 1 && X[i] == p)
-                    return Y[len - 1];
-
-                if (i == 0)
-                    return Y[0];
-
-                // linearly interpolate between two adjacent points
-                double h = (X[i] - X[i - 1]);
-                double A = (X[i] - p) / h;
-                double B = (p - X[i - 1]) / h;
-
-                result = Y[i - 1] * A + Y[i] * B;
-
-                return result;
-
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        private bool baseset = false;
-        private int len;
-        private List<double> lX;
-    }
-
-    #endregion
-
+    //3차 곡선 보간법
     #region  CUBIC_SPLINE
     internal sealed class CubicSplineInterpolation : Interpolation
     {
@@ -335,13 +260,13 @@ namespace BasicInterpolation
             if (len > 1)
             {
 
-                Console.WriteLine("Successfully set abscissa and ordinate.");
+                //Console.WriteLine("파장좌표 설정");
                 baseset = true;
                 // make a copy of X as a list for later use
                 lX = X.ToList();
             }
             else
-                Console.WriteLine("Ensure x and y are the same length and have at least 2 elements. All x values must be unique. X-values must be in ascending order.");
+                Console.WriteLine("x,y최소 2개 이상 ");
         }
 
         public override double? Interpolate(double p)
@@ -380,7 +305,7 @@ namespace BasicInterpolation
                     c = Enumerable.Repeat(0.0, N + 1).ToArray();
 
                     // solve tridiagonal matrix
-                    TridiagonalMatrix.Tridiagonal le = new TridiagonalMatrix.Tridiagonal();
+                    Tridiagonal le = new Tridiagonal();
                     double[] solution = le.Solve(H, dD3);
 
                     for (int i = 1; i < N; i++)
@@ -444,84 +369,70 @@ namespace BasicInterpolation
         private List<double> lX;
     }
     #endregion
+
+    
     class EntryPoint
     {
-        static void Main(string[] args)
+        static void changefunction(string path)
         {
-            // code relies on abscissa values to be sorted
-            // there is a check for this condition, but no fix
-            // f(x) = 1/(1+x^2)*sin(x)
-
-
             string[] MeasurementSpectrumData;   // 측정 스펙트럼 데이터 저장할 배열. (한 줄씩 저장)
             string[] SingleLineData;            // 한 줄의 스펙트럼 데이터를 임시로 저장할 배열.
 
             // "SiO2 2nm_on_Si.dat" 파일 읽기. (한 줄씩)
-            MeasurementSpectrumData = File.ReadAllLines("Si_nm.txt");
+            MeasurementSpectrumData = File.ReadAllLines(path);
             int LoopNum = MeasurementSpectrumData.Length;
 
-            // wavelength : 350 ~ 1000(nm)인 측정 스펙트럼 데이터를 담을 리스트 선언.
-            //List<double> wavelength = new List<double>();   // 파장 데이터 리스트.
-            //List<double> n = new List<double>();    // n 데이터 리스트.
-            //List<double> k = new List<double>();   // k 데이터 리스트.
-            double[] wavelength = new double[LoopNum-1];
-            double[] n = new double[LoopNum-1];
-            double[] k = new double[LoopNum-1];
+            double[] wavelength = new double[LoopNum - 1];
+            double[] n = new double[LoopNum - 1];
+            double[] k = new double[LoopNum - 1];
 
             // 데이터의 첫번째 줄은 column 명이다.
             // 이를 제외하기 위해 반복문을 1부터 시작한다.
             int StartIndex = 1;
-            
+
             for (int i = StartIndex; i < LoopNum; i++)
             {
                 // tsv 형식의 데이터를 SingleLineData에 저장한다.
                 SingleLineData = MeasurementSpectrumData[i].Split((char)0x09);  // 0x09 : 수평 탭.
 
                 // 각 컬럼에 해당하는 데이터를 저장한다.
-                //wavelength.Add(Double.Parse(SingleLineData[0]));
-                //n.Add(Double.Parse(SingleLineData[1]));
-                //k.Add(Double.Parse(SingleLineData[2]));
-                wavelength[i-1] = double.Parse(SingleLineData[0]);
-                n[i-1] = double.Parse(SingleLineData[1]);
-                k[i-1] = double.Parse(SingleLineData[2]);
+                wavelength[i - 1] = double.Parse(SingleLineData[0]);
+                n[i - 1] = double.Parse(SingleLineData[1]);
+                k[i - 1] = double.Parse(SingleLineData[2]);
             }
 
-            for (int i = 0; i < LoopNum-1; i++)
+            double[] p = new double[130];
+            for (int i = 0; i < 130; i++)
             {
-                Console.WriteLine($"{wavelength[i]}          {n[i]}          {k[i]}");
-            }
-            /*double[] ex = new double[wavelength.Count];
-            double[] en = new double[wavelength.Count];
-            //double[] p = new double[wavelength.Count];
-            double[] p = { 350, 355, 360, 400, 450, 500, 600, 650, 700, 750, 800, 850 };
-
-            for (int i = 0; i < wavelength.Count; i++)
-            {
-                ex[i] = wavelength[i];
-                en[i] = n[i];
+                p[i] = 350 + i * 5;
             }
 
-            LinearInterpolation LI = new LinearInterpolation(ex, en);
-            CubicSplineInterpolation CS = new CubicSplineInterpolation(ex, en);
+            CubicSplineInterpolation CS1 = new CubicSplineInterpolation(wavelength, n);
+            CubicSplineInterpolation CS2 = new CubicSplineInterpolation(wavelength, k);
 
-            Console.WriteLine("Linear Interpolation:");
-            foreach (double pp in p)
-            {
-                Console.WriteLine($"{pp} \t:\t"
-                + LI.Interpolate(pp).ToString());
-
-            }
-            Console.WriteLine();
-            Console.WriteLine();
 
             Console.WriteLine("Cubic Spline Interpolation:");
             foreach (double pp in p)
             {
-
-                Console.WriteLine($"{pp} \t:\t"
-                    + CS.Interpolate(pp).ToString());
+                Console.WriteLine($"{pp} \t"
+                    + CS1.Interpolate(pp).ToString() + "\t" + CS2.Interpolate(pp).ToString());
             }
-            Console.ReadLine();*/
+        }
+        static void Main(string[] args)
+        {
+            // code relies on abscissa values to be sorted
+            // there is a check for this condition, but no fix
+            // f(x) = 1/(1+x^2)*sin(x)
+
+            string path1 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\Si_nm.txt";
+            changefunction(path1);
+            Console.WriteLine();
+            string path2 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt";
+            changefunction(path2);
+            Console.WriteLine();
+            string path3 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiN.txt";
+            //changefunction(path3);
+
         }
     }
 }
