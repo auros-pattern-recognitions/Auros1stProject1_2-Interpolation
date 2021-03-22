@@ -389,34 +389,39 @@ namespace Interpolation
             // 데이터의 첫번째 줄은 column 명이다.
             // 이를 제외하기 위해 반복문을 1부터 시작한다.
             int StartIndex = 1;
+            char[] delimiterChars = { ' ', '\t', '\n', ',' };
 
             for (int i = StartIndex; i < LoopNum; i++)
             {
                 // tsv 형식의 데이터를 SingleLineData에 저장한다.
-                SingleLineData = MeasurementSpectrumData[i].Split((char)0x09);  // 0x09 : 수평 탭.
+                SingleLineData = MeasurementSpectrumData[i].Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);  // 0x09 : 수평 탭.
 
                 // 각 컬럼에 해당하는 데이터를 저장한다.
                 wavelength[i - 1] = double.Parse(SingleLineData[0]);
                 n[i - 1] = double.Parse(SingleLineData[1]);
                 k[i - 1] = double.Parse(SingleLineData[2]);
             }
-
-            double[] p = new double[130];
+            // 데이터 확인
+            for (int i = 0; i < LoopNum-1; i++)
+            {
+                Console.WriteLine($"{wavelength[i]}     {n[i]}     {k[i]}");
+            }
+            /*double[] p = new double[130];
             for (int i = 0; i < 130; i++)
             {
                 p[i] = 350 + i * 5;
-            }
+            }*/
 
-            CubicSplineInterpolation CS1 = new CubicSplineInterpolation(wavelength, n);
-            CubicSplineInterpolation CS2 = new CubicSplineInterpolation(wavelength, k);
+            //CubicSplineInterpolation CS1 = new CubicSplineInterpolation(wavelength, n);
+            //CubicSplineInterpolation CS2 = new CubicSplineInterpolation(wavelength, k);
 
 
-            Console.WriteLine("Cubic Spline Interpolation:");
+            /*Console.WriteLine("Cubic Spline Interpolation:");
             foreach (double pp in p)
             {
                 Console.WriteLine($"{pp} \t"
                     + CS1.Interpolate(pp).ToString() + "\t" + CS2.Interpolate(pp).ToString());
-            }
+            }*/
         }
         static void Main(string[] args)
         {
@@ -424,14 +429,14 @@ namespace Interpolation
             // there is a check for this condition, but no fix
             // f(x) = 1/(1+x^2)*sin(x)
 
-            string path1 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\Si_nm.txt";
+            string path1 = @"C:\Users\jungj\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\Si_nm.txt";
             changefunction(path1);
             Console.WriteLine();
-            string path2 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt";
+            string path2 = @"C:\Users\jungj\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt";
             changefunction(path2);
             Console.WriteLine();
-            string path3 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiN.txt";
-            //changefunction(path3);
+            string path3 = @"C:\Users\jungj\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiN.txt";
+            changefunction(path3);
 
         }
     }
