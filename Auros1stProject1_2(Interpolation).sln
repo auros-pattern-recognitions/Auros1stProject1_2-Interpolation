@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31005.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auros1stProject1_2(Interpolation)", "Auros1stProject1_2(Interpolation)\Auros1stProject1_2(Interpolation).csproj", "{EC501A16-CAF0-40AD-96D3-3174F7CB1EF5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC501A16-CAF0-40AD-96D3-3174F7CB1EF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC501A16-CAF0-40AD-96D3-3174F7CB1EF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC501A16-CAF0-40AD-96D3-3174F7CB1EF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC501A16-CAF0-40AD-96D3-3174F7CB1EF5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {50C78D99-9A87-44BC-A524-36969959E39C}
+	EndGlobalSection
+EndGlobal
