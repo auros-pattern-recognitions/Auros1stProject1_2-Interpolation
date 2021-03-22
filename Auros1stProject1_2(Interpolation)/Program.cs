@@ -211,7 +211,7 @@ namespace Interpolation
             int xLength = _x.Length;
             if (checkSorted)
             {
-                if (xLength == _y.Length && xLength > 1 && _x.Distinct().Count() == xLength && Enumerable.SequenceEqual(_x.SortedList(), _x.ToList()))
+                if (xLength == _y.Length && xLength > 1 /*&& _x.Distinct().Count() == xLength*/ && Enumerable.SequenceEqual(_x.SortedList(), _x.ToList()))
                 {
                     x = _x;
                     y = _y;
@@ -256,7 +256,7 @@ namespace Interpolation
     {
         public CubicSplineInterpolation(double[] _x, double[] _y) : base(_x, _y, true)
         {
-            len = X.Length;
+            len = _x.Length;
             if (len > 1)
             {
 
@@ -402,26 +402,42 @@ namespace Interpolation
                 k[i - 1] = double.Parse(SingleLineData[2]);
             }
             // 데이터 확인
-            for (int i = 0; i < LoopNum-1; i++)
-            {
-                Console.WriteLine($"{wavelength[i]}     {n[i]}     {k[i]}");
-            }
-            /*double[] p = new double[130];
+            //for (int i = 0; i < LoopNum-1; i++)
+            //{
+            //    Console.WriteLine($"{wavelength[i]}     {n[i]}     {k[i]}");
+            //}
+            double[] p = new double[130];
             for (int i = 0; i < 130; i++)
             {
                 p[i] = 350 + i * 5;
-            }*/
+            }
 
-            //CubicSplineInterpolation CS1 = new CubicSplineInterpolation(wavelength, n);
-            //CubicSplineInterpolation CS2 = new CubicSplineInterpolation(wavelength, k);
+            CubicSplineInterpolation CS1 = new CubicSplineInterpolation(wavelength, n);
+            CubicSplineInterpolation CS2 = new CubicSplineInterpolation(wavelength, k);
+            // 텍스트에 저장
+            StreamWriter writer;
+            if (path == @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt")
+            {
+                path = "SiO2_new.txt";
+            }
+            else if (path == @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\Si_nm.txt")
+            {
+                path = "Si_new.txt";
+            }
+            else if (path == @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiN.txt")
+            {
+                path = "SiN_new.txt";
+            }
+            writer = File.CreateText(path);
+            writer.Write("wavelength(nm)\tn\tk\t\n");
 
-
-            /*Console.WriteLine("Cubic Spline Interpolation:");
+            Console.WriteLine("Cubic Spline Interpolation:");
             foreach (double pp in p)
             {
-                Console.WriteLine($"{pp} \t"
-                    + CS1.Interpolate(pp).ToString() + "\t" + CS2.Interpolate(pp).ToString());
-            }*/
+                Console.WriteLine($"{pp}\t{ CS1.Interpolate(pp).ToString() }\t { CS2.Interpolate(pp).ToString()}" );
+                writer.WriteLine($"{pp}\t{ CS1.Interpolate(pp).ToString() }\t { CS2.Interpolate(pp).ToString()}" );
+            }
+
         }
         static void Main(string[] args)
         {
@@ -429,13 +445,13 @@ namespace Interpolation
             // there is a check for this condition, but no fix
             // f(x) = 1/(1+x^2)*sin(x)
 
-            string path1 = @"C:\Users\jungj\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\Si_nm.txt";
+            string path1 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt";
             changefunction(path1);
             Console.WriteLine();
-            string path2 = @"C:\Users\jungj\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt";
+            string path2 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\Si_nm.txt";
             changefunction(path2);
             Console.WriteLine();
-            string path3 = @"C:\Users\jungj\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiN.txt";
+            string path3 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiN.txt";
             changefunction(path3);
 
         }
