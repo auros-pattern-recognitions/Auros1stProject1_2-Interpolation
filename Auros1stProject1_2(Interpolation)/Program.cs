@@ -350,6 +350,8 @@ namespace Interpolation
     {
         static void Interpolation(string path)
         {
+            //n, k 값을 보간하기 위해
+            #region 물성값 파일 읽어오기
             string[] LoadingData;           // 물성값 데이터 저장할 배열. (한 줄씩 저장)
             string[] ColumnData;            // 물성 데이터를 임시로 저장할 배열.
 
@@ -375,17 +377,32 @@ namespace Interpolation
                 n[i - 1] = double.Parse(ColumnData[1]);
                 k[i - 1] = double.Parse(ColumnData[2]);
             }
+            #endregion
+            
+            #region 기준이 될 측정 스펙트럼 파일 읽어오기
+            string[] SpectrumData;              // 측정 스펙트럼 데이터 저장할 배열. (한 줄씩 저장)
+            string[] StdWavelength;             // 기준이 될 wavelength 값 저장할 배열
 
-            double[] abscissa = new double[131];    //축을 350~1000(nm)로 5nm단위
-            for (int i = 0; i < 131; i++)
+            SpectrumData = File.ReadAllLines("SiO2 2nm_on_Si_new.dat");
+            int DataNum = SpectrumData.Length;
+
+            double[] Abscissa = new double[DataNum - 1];
+
+            for (int i = StartIndex; i < DataNum; i++)
             {
-                abscissa[i] = 350 + i * 5;
-            }
+                // Split한 데이터를 StdWavelength에 저장한다.
+                StdWavelength = SpectrumData[i].Split(DelimiterChars, StringSplitOptions.RemoveEmptyEntries);
 
+                // wavelength에 해당하는 데이터를 저장한다.
+                Abscissa[i - 1] = double.Parse(StdWavelength[0]);
+            }
+            #endregion
+
+            //보간
             CubicSplineInterpolation CS_n = new CubicSplineInterpolation(wavelength, n);
             CubicSplineInterpolation CS_k = new CubicSplineInterpolation(wavelength, k);
 
-            // 텍스트에 저장
+            #region new.txt 파일로 저장 
             if (path == "SiO2_nm.txt")
             {
                 path = "SiO2_new.txt";
@@ -407,7 +424,7 @@ namespace Interpolation
                     $"k");
 
                 // 스펙트럼 데이터 쓰기.
-                foreach (double axis in abscissa)
+                foreach (double axis in Abscissa)
                 {
                     Console.WriteLine(axis + "\t"
                         + CS_n.Interpolate(axis) + "\t"
@@ -417,6 +434,7 @@ namespace Interpolation
                         + CS_k.Interpolate(axis));
                 }
             }
+            #endregion
         }
         static void Main(string[] args)
         {
