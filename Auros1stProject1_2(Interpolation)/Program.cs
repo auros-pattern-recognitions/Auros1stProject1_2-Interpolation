@@ -60,7 +60,8 @@ namespace Interpolation
                 {
                     c[0] = c[0] / b[0];
                     d[0] = d[0] / b[0];
-
+                    
+                    //앞에서 부터 계산
                     for (int i = 1; i < len - 1; i++)
                     {
                         c[i] = c[i] / (b[i] - a[i] * c[i - 1]);
@@ -68,7 +69,7 @@ namespace Interpolation
                     }
                     d[len - 1] = (d[len - 1] - a[len - 1] * d[len - 2]) / (b[len - 1] - a[len - 1] * c[len - 2]);
 
-                    // back-substitution step
+                    // 뒤에서 부터 계산
                     for (int i = (len - 1); i-- > 0;)
                     {
                         d[i] = d[i] - c[i] * d[i + 1];
@@ -92,10 +93,11 @@ namespace Interpolation
 
     #endregion
 
+    //배열 설정(오름차순, 간격, 스케일
     #region EXTENSIONS
     public static class Extensions
     {
-        // returns a list sorted in ascending order 
+        // 배열을 오름 차순으로 리턴
         public static List<T> SortedList<T>(this T[] array)
         {
             List<T> l = array.ToList();
@@ -104,7 +106,7 @@ namespace Interpolation
 
         }
 
-        // returns a difference between consecutive elements of an array
+        // 배열을 넣으면 배열의 요소의 앞뒤 차이를 배열로 리턴
         public static double[] Diff(this double[] array)
         {
             int len = array.Length - 1;
@@ -116,20 +118,20 @@ namespace Interpolation
             return diffsArray;
         }
 
-        // scaled an array by another array of doubles
+        // 배열의 값들을 스케일 변환
         public static double[] Scale(this double[] array, double[] scalor, bool mult = true)
         {
             int len = array.Length;
             double[] scaledArray = new double[len];
 
-            if (mult)
+            if (mult)   //확장
             {
                 for (int i = 0; i < len; i++)
                 {
                     scaledArray[i] = array[i] * scalor[i];
                 }
             }
-            else
+            else        //축소
             {
                 for (int i = 0; i < len; i++)
                 {
@@ -139,23 +141,23 @@ namespace Interpolation
                     }
                     else
                     {
-                        // basic fix to prevent division by zero
+                        // scalor의 인수가 0일때 예외 발생 방지
                         scalor[i] = 0.00001;
                         scaledArray[i] = array[i] / scalor[i];
 
                     }
                 }
             }
-
             return scaledArray;
         }
-
+        
+        //2차원 행렬에 일차원 배열 대각선으로 저장
         public static double[,] Diag(this double[,] matrix, double[] diagVals)
         {
-            int rows = matrix.GetLength(0);
+            int rows = matrix.GetLength(0);// 매트릭스의 크기 참조
             int cols = matrix.GetLength(1);
             // the matrix has to be scare
-            if (rows == cols)
+            if (rows == cols)   //정방행렬
             {
                 double[,] diagMatrix = new double[rows, cols];
                 int k = 0;
@@ -164,7 +166,7 @@ namespace Interpolation
                     {
                         if (i == j)
                         {
-                            diagMatrix[i, j] = diagVals[k];
+                            diagMatrix[i, j] = diagVals[k]; //일차원 배열을 대각선에 저장
                             k++;
                         }
                         else
@@ -176,7 +178,7 @@ namespace Interpolation
             }
             else
             {
-                Console.WriteLine("Diag should be used on square matrix only.");
+                Console.WriteLine("정방행렬이 아닙니다.");
                 return null;
             }
 
@@ -186,103 +188,46 @@ namespace Interpolation
 
     #endregion
 
-    #region FOUNDATION
-    //internal interface IInterpolate
-    //{
-    //    double? Interpolate(double p);
-    //}
-
-    internal abstract class Interpolation //: IInterpolate
+    //3차 곡선 보간법
+    #region  CUBIC_SPLINE
+    internal sealed class CubicSplineInterpolation
     {
+        // f(x) = 1/(1+x^2)*sin(x)
 
-        public Interpolation(double[] _x, double[] _y)
+        public CubicSplineInterpolation(double[] _x, double[] _y)
         {
             int xLength = _x.Length;
-            if (xLength == _y.Length && xLength > 1 && _x.Distinct().Count() == xLength)
+            if (xLength == _y.Length && xLength > 1)    //배열에 인자 넣기
             {
                 x = _x;
                 y = _y;
             }
-        }
-
-        // cubic spline relies on the abscissa values to be sorted
-        public Interpolation(double[] _x, double[] _y, bool checkSorted = true)
-        {
-            int xLength = _x.Length;
-            if (checkSorted)
-            {
-                if (xLength == _y.Length && xLength > 1 /*&& _x.Distinct().Count() == xLength*/ && Enumerable.SequenceEqual(_x.SortedList(), _x.ToList()))
-                {
-                    x = _x;
-                    y = _y;
-                }
-            }
-            else
-            {
-                if (xLength == _y.Length && xLength > 1 && _x.Distinct().Count() == xLength)
-                {
-                    x = _x;
-                    y = _y;
-                }
-            }
-        }
-
-        public double[] X
-        {
-            get
-            {
-                return x;
-            }
-        }
-
-        public double[] Y
-        {
-            get
-            {
-                return y;
-            }
-        }
-
-        public abstract double? Interpolate(double p);
-
-        private double[] x;
-        private double[] y;
-    }
-
-    #endregion
-    //3차 곡선 보간법
-    #region  CUBIC_SPLINE
-    internal sealed class CubicSplineInterpolation : Interpolation
-    {
-        public CubicSplineInterpolation(double[] _x, double[] _y) : base(_x, _y, true)
-        {
             len = _x.Length;
             if (len > 1)
             {
-
-                //Console.WriteLine("파장좌표 설정");
                 baseset = true;
-                // make a copy of X as a list for later use
-                lX = X.ToList();
+                lX = X.ToList();    //배열을 리스트로 저장
             }
             else
                 Console.WriteLine("x,y최소 2개 이상 ");
         }
 
-        public override double? Interpolate(double p)
+        public  double? Interpolate(double p)
         {
             if (baseset)
             {
                 double? result = 0;
                 int N = len - 1;
 
-                double[] h = X.Diff();
-                double[] D = Y.Diff().Scale(h, false);
+                double[] h = X.Diff();  //x배열의 차이 저장
+                double[] D = Y.Diff().Scale(h, false);//스케일링
+                //반복되는 단일 값이 들어있는 시퀀스 생성
                 double[] s = Enumerable.Repeat(3.0, D.Length).ToArray();
+                //차이값 스케일링
                 double[] dD3 = D.Diff().Scale(s);
                 double[] a = Y;
 
-                // generate tridiagonal system
+                // 3중 대각선 값들 정리
                 double[,] H = new double[N - 1, N - 1];
                 double[] diagVals = new double[N - 1];
                 for (int i = 1; i < N; i++)
@@ -292,7 +237,7 @@ namespace Interpolation
 
                 H = H.Diag(diagVals);
 
-                // H can be null if non-square matrix is passed
+                // 정사각 행렬이 아닐경우
                 if (H != null)
                 {
                     for (int i = 0; i < N - 2; i++)
@@ -325,8 +270,7 @@ namespace Interpolation
 
                     try
                     {
-                        // point p may be outside abscissa's range
-                        // if it is, we return null
+                        //p값이 x축 좌표계의 범위를 넘어갈때
                         Rx = X.First(m => m >= p);
                     }
                     catch
@@ -334,8 +278,7 @@ namespace Interpolation
                         return null;
                     }
 
-                    // at this stage we know that Rx contains a valid value
-                    // find the index of the value close to the point required to be interpolated for
+                    //보간 하고자 하는 지점과 가장 가까운 x축 좌표를 찾는다.
                     int iRx = lX.IndexOf(Rx);
 
                     if (iRx == -1)
@@ -363,22 +306,39 @@ namespace Interpolation
             else
                 return null;
         }
+        public double[] X
+        {
+            get
+            {
+                return x;
+            }
+        }
 
+        public double[] Y
+        {
+            get
+            {
+                return y;
+            }
+        }
         private bool baseset = false;
         private int len;
         private List<double> lX;
+        private double[] x;
+        private double[] y;
     }
     #endregion
 
     
     class EntryPoint
     {
-        static void changefunction(string path)
+        static void Interpolation(string path)
         {
+           
+
             string[] MeasurementSpectrumData;   // 측정 스펙트럼 데이터 저장할 배열. (한 줄씩 저장)
             string[] SingleLineData;            // 한 줄의 스펙트럼 데이터를 임시로 저장할 배열.
 
-            // "SiO2 2nm_on_Si.dat" 파일 읽기. (한 줄씩)
             MeasurementSpectrumData = File.ReadAllLines(path);
             int LoopNum = MeasurementSpectrumData.Length;
 
@@ -393,19 +353,15 @@ namespace Interpolation
 
             for (int i = StartIndex; i < LoopNum; i++)
             {
-                // tsv 형식의 데이터를 SingleLineData에 저장한다.
-                SingleLineData = MeasurementSpectrumData[i].Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);  // 0x09 : 수평 탭.
+                // Split한 데이터를 SingleLineData에 저장한다.
+                SingleLineData = MeasurementSpectrumData[i].Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);  
 
                 // 각 컬럼에 해당하는 데이터를 저장한다.
                 wavelength[i - 1] = double.Parse(SingleLineData[0]);
                 n[i - 1] = double.Parse(SingleLineData[1]);
                 k[i - 1] = double.Parse(SingleLineData[2]);
             }
-            // 데이터 확인
-            //for (int i = 0; i < LoopNum-1; i++)
-            //{
-            //    Console.WriteLine($"{wavelength[i]}     {n[i]}     {k[i]}");
-            //}
+           
             double[] p = new double[130];
             for (int i = 0; i < 130; i++)
             {
@@ -414,6 +370,7 @@ namespace Interpolation
 
             CubicSplineInterpolation CS1 = new CubicSplineInterpolation(wavelength, n);
             CubicSplineInterpolation CS2 = new CubicSplineInterpolation(wavelength, k);
+            
             // 텍스트에 저장
             StreamWriter writer;
             if (path == @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt")
@@ -441,19 +398,17 @@ namespace Interpolation
         }
         static void Main(string[] args)
         {
-            // code relies on abscissa values to be sorted
-            // there is a check for this condition, but no fix
-            // f(x) = 1/(1+x^2)*sin(x)
-
+            
+            
             string path1 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt";
-            changefunction(path1);
+            Interpolation(path1);
             Console.WriteLine();
             string path2 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\Si_nm.txt";
-            changefunction(path2);
+            Interpolation(path2);
             Console.WriteLine();
             string path3 = @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiN.txt";
-            changefunction(path3);
-
+            Interpolation(path3);
+           
         }
     }
 }
