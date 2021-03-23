@@ -362,8 +362,8 @@ namespace Interpolation
                 k[i - 1] = double.Parse(SingleLineData[2]);
             }
            
-            double[] p = new double[130];
-            for (int i = 0; i < 130; i++)
+            double[] p = new double[131];
+            for (int i = 0; i < 131; i++)
             {
                 p[i] = 350 + i * 5;
             }
@@ -372,7 +372,6 @@ namespace Interpolation
             CubicSplineInterpolation CS2 = new CubicSplineInterpolation(wavelength, k);
             
             // 텍스트에 저장
-            StreamWriter writer;
             if (path == @"C:\Users\sksms\Source\Repos\Auros1stProject1_2-Interpolation\Auros1stProject1_2(Interpolation)\data\SiO2_nm.txt")
             {
                 path = "SiO2_new.txt";
@@ -385,15 +384,26 @@ namespace Interpolation
             {
                 path = "SiN_new.txt";
             }
-            writer = File.CreateText(path);
-            writer.Write("wavelength(nm)\tn\tk\t\n");
-
-            Console.WriteLine("Cubic Spline Interpolation:");
-            foreach (double pp in p)
+            using (StreamWriter NewSpectrumOutputFile = new StreamWriter(path))
             {
-                Console.WriteLine($"{pp}\t{ CS1.Interpolate(pp).ToString() }\t { CS2.Interpolate(pp).ToString()}" );
-                writer.WriteLine($"{pp}\t{ CS1.Interpolate(pp).ToString() }\t { CS2.Interpolate(pp).ToString()}" );
+                // 컬럼 명 쓰기.
+                NewSpectrumOutputFile.WriteLine(
+                    $"wavelength(nm)\t" +
+                    $"n\t" +
+                    $"k");   
+
+                // 스펙트럼 데이터 쓰기.
+                foreach (double pp in p)
+                {
+                    Console.WriteLine($"{pp}\t" +
+                        $"{ CS1.Interpolate(pp).ToString() }\t" +
+                        $"{ CS2.Interpolate(pp).ToString()}");
+                    NewSpectrumOutputFile.WriteLine($"{pp}\t" +
+                        $"{ CS1.Interpolate(pp).ToString() }\t" +
+                        $" { CS2.Interpolate(pp).ToString()}");
+                }
             }
+
 
         }
         static void Main(string[] args)
