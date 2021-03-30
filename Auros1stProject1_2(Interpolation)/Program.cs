@@ -243,7 +243,7 @@ namespace Interpolation
                 // ((Y[n+2] - Y[n+1] / X[n+2] - X[n+1]) - (Y[n+1] - Y[n] / X[n+1] - X[n])) * 3
                 double[] dD3 = D.Gap().Scale(s);
                 //Ak
-                double[] a = Y;
+                double[] d = Y;
                 // 3중 대각선 값들 정리
                 double[,] H = new double[N - 1, N - 1];
                 double[] diagVals = new double[N - 1];
@@ -264,18 +264,18 @@ namespace Interpolation
                 if (H != null)
                 {
                     //hk*ck + 2(hK + h(k+1)) * c(k+1) + h(k+1) * c(k+2)
-                    //[diagVals[0]      h[0,1]                                         ]
-                    //[   h[1,0]       diagVals[1]   h[1,2]                              ]
-                    //[                 h[2,1]    diagVals[2]    h[2,3]                  ]
-                    //[                            h[3,2]    diagVals[3]      h[i + 1] ]
+                    //[diagVals[0]      h[0]                                         ]
+                    //[   h[0]       diagVals[1]   h[1]                              ]
+                    //[                 h[1]    diagVals[2]    h[2]                  ]
+                    //[                            h[2]    diagVals[3]      h[i + 1] ]
                     //[                                       h[i + 1]    diagVals[i]]
                     for (int i = 0; i < N - 2; i++)
                     {
                         H[i, i + 1] = h[i + 1];//c
                         H[i + 1, i] = h[i + 1];//a
                     }
-                    double[] c = new double[N + 2];
-                    c = Enumerable.Repeat(0.0, N + 1).ToArray();
+                    double[] b = new double[N + 2];
+                    b = Enumerable.Repeat(0.0, N + 1).ToArray();
 
                     // solve tridiagonal matrix
                     // 토마스 알고리즘을 통해서 d를 구함
@@ -284,15 +284,15 @@ namespace Interpolation
                     double[] solution = matrix.MaxtrixSolve(H, dD3);
                     for (int i = 1; i < N; i++)
                     {
-                        c[i] = solution[i - 1];
+                        b[i] = solution[i - 1];
                     }
                     //Dk // Bk 를 구하기 위한 공식
-                    double[] b = new double[N];
-                    double[] d = new double[N];
+                    double[] a = new double[N];
+                    double[] c = new double[N];
                     for (int i = 0; i < N; i++)
                     {
-                        b[i] = D[i] - (h[i] * (c[i + 1] + 2.0 * c[i])) / 3.0;
-                        d[i] = (c[i + 1] - c[i]) / (3.0 * h[i]);
+                        a[i] = (b[i + 1] - b[i]) / (3.0 * h[i]);
+                        c[i] = D[i] - (h[i] * (b[i + 1] + 2.0 * b[i])) / 3.0;
                     }
                     double Rx;
                     try
@@ -323,8 +323,8 @@ namespace Interpolation
                     // X[iRx] >> p좌표 근처의 x축 데이터 값
                     Rx = p - X[iRx];
                     // 큐빅 스플라인 공식을 풀어쓴 코드
-                    // result = a[iRx] + Rx * b[iRx] + Rx * Rx * c[iRx] + Rx * Rx * Rx * d[iRx];
-                    result = a[iRx] + Rx * (b[iRx] + Rx * (c[iRx] + Rx * d[iRx]));
+                    // result = a[iRx]*Rx^3 +  b[iRx]*Rx^2 + c[iRx]*Rx + d[iRx];
+                    result = d[iRx] + Rx * (c[iRx] + Rx * (b[iRx] + Rx * a[iRx]));
                     return result;
                 }
                 else
