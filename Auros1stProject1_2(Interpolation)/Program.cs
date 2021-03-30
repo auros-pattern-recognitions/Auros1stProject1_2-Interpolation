@@ -399,25 +399,37 @@ namespace Interpolation
                 k[i - 1] = double.Parse(ColumnData[2]);
             }
             #endregion
-            
+
             #region 기준이 될 측정 스펙트럼 파일 읽어오기
+            // 2nm_on_si 스펙트럼 기준
             string[] SpectrumData;              // 측정 스펙트럼 데이터 저장할 배열. (한 줄씩 저장)
             string[] StdWavelength;             // 기준이 될 wavelength 값 저장할 배열
-
+            
             SpectrumData = File.ReadAllLines("SiO2 2nm_on_Si_new.dat");
             int DataNum = SpectrumData.Length;
-
+            
             double[] Abscissa = new double[DataNum - 1];
-
+            
             for (int i = StartIndex; i < DataNum; i++)
             {
                 // Split한 데이터를 StdWavelength에 저장한다.
                 StdWavelength = SpectrumData[i].Split(DelimiterChars, StringSplitOptions.RemoveEmptyEntries);
-
+            
                 // wavelength에 해당하는 데이터를 저장한다.
                 Abscissa[i - 1] = double.Parse(StdWavelength[0]);
             }
+
+            //350~1000까지 간격 1nm
+            //double[] Abscissa = new double[631];
+            //for (int i = 0; i < 631; i++)
+            //{
+            //    Abscissa[i] = 350 + i;
+            //}
+
             #endregion
+
+
+
 
             //보간
             CubicSplineInterpolation CS_n = new CubicSplineInterpolation(wavelength, n);
@@ -427,14 +439,17 @@ namespace Interpolation
             if (path == "SiO2_nm.txt")
             {
                 path = "SiO2_new.txt";
+                //path = "SiO2_new2.txt";
             }
             else if (path == "Si_nm.txt")
             {
                 path = "Si_new.txt";
+                //path = "Si_new2.txt";
             }
             else if (path == "SiN.txt")
             {
                 path = "SiN_new.txt";
+                //path = "SiN_new2.txt";
             }
             using (StreamWriter NewInterpolationFile = new StreamWriter(path))
             {
